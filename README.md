@@ -1,16 +1,65 @@
-# React + Vite
+# Resume Tailor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An AI-powered resume tailoring tool that analyzes your resume against a job description, rewrites it to better match the role, scores your ATS compatibility, and generates a cover letter — all for free.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **ATS Score** — analyzes keyword match between your resume and the job description
+- **Tailored Resume** — rewrites your resume to align with the role while keeping all facts accurate
+- **Side-by-side Diff** — highlights exactly what changed between original and tailored versions
+- **Cover Letter** — generates a professional, concise cover letter based on your resume and the job
+- **PDF Download** — exports the tailored resume as a clean, professionally formatted PDF
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend** — React 19, Vite, Tailwind CSS
+- **AI** — Groq API (Llama 3.3 70B)
+- **Deployment** — Vercel (serverless API routes)
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+
+- Node.js 18+
+- A [Groq API key](https://console.groq.com)
+
+### Installation
+
+```bash
+git clone https://github.com/your-username/resume-tailor.git
+cd resume-tailor
+npm install
+```
+
+### Environment Variables
+
+Create a `.env` file in the root:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### Run Locally
+
+```bash
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`.
+
+## Deployment
+
+Deploy to Vercel with one command:
+
+```bash
+npm run deploy
+```
+
+Add `GROQ_API_KEY` to your Vercel project's environment variables before deploying.
+
+## How It Works
+
+1. Paste your resume and the job description
+2. Click **Analyze & Tailor Resume**
+3. Review the ATS score, diff view, and tailored resume
+4. Download the tailored resume as a PDF or copy the cover letter
