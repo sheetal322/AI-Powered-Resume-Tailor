@@ -25,10 +25,6 @@ Job Description:
 ${jobDescription}`;
 
   try {
-    console.log(
-      "Request body (ats-score):",
-      typeof req.body === "string" ? req.body.slice(0, 1000) : req.body,
-    );
     const groqRes = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {

@@ -29,7 +29,6 @@ export default function App() {
     setResults(null);
 
     try {
-      console.log("Posting to /api/ats-score and /api/tailor");
       const [atsRes, tailorRes] = await Promise.all([
         fetch("/api/ats-score", {
           method: "POST",
@@ -43,10 +42,6 @@ export default function App() {
         }),
       ]);
 
-      console.log("Response statuses:", {
-        ats: atsRes.status,
-        tailor: tailorRes.status,
-      });
       if (!atsRes.ok || !tailorRes.ok) {
         const msg = await (atsRes.ok ? tailorRes : atsRes).text();
         console.error(
