@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { diffLines, diffWords } from "diff";
 import { downloadAsPDF } from "../utils/downloadPDF";
 
@@ -101,6 +101,31 @@ function buildSideBySideRows(original, tailored) {
 
 export default function DiffViewer({ original, tailored }) {
   const [mode, setMode] = useState("diff");
+  const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(tailored || "");
+      setCopied(true);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+      copyTimeoutRef.current = window.setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Copy failed", error);
+    }
+  };
 
   const tabs = [
     { id: "original", label: "Original" },
@@ -262,10 +287,10 @@ export default function DiffViewer({ original, tailored }) {
             Download PDF
           </button>
           <button
-            onClick={() => navigator.clipboard.writeText(tailored)}
+            onClick={handleCopy}
             className="text-xs px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"
           >
-            Copy to Clipboard
+            {copied ? "Copied!" : "Copy to Clipboard"}
           </button>
         </div>
       )}
