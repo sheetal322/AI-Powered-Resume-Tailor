@@ -10,19 +10,11 @@ export default async function handler(req, res) {
       .json({ error: "resume and jobDescription are required" });
   }
 
-  const prompt = `Analyze the resume against the job description below.
-Return ONLY valid JSON — no markdown, no explanation, no code blocks.
-Format: {"score": <integer 0-100>, "missing": ["keyword1", ...], "present": ["keyword2", ...]}
-
-The "missing" array should contain important skills/technologies/qualifications from the job description that are NOT in the resume.
-The "present" array should contain important keywords that appear in both.
-Limit each array to the 10 most important items.
-
-Resume:
-${resume}
-
-Job Description:
-${jobDescription}`;
+  const prompt = `Analyze resume vs job description. Return ONLY JSON: {"score": <0-100>, "missing": [...], "present": [...]}
+- "missing": 5-8 key skills from job description NOT in resume
+- "present": 5-8 key skills appearing in both
+Resume: ${resume}
+Job: ${jobDescription}`;
 
   try {
     const groqRes = await fetch(
@@ -36,28 +28,52 @@ ${jobDescription}`;
         body: JSON.stringify({
           model: "openai/gpt-oss-20b",
           messages: [{ role: "user", content: prompt }],
-          temperature: 0.1,
-          max_tokens: 512,
+          temperature: 0.3,
+          max_tokens: 1500,
         }),
       },
     );
 
     if (!groqRes.ok) {
       const err = await groqRes.text();
-      console.error(
-        "Groq returned non-OK status",
-        groqRes.status,
-        err.slice ? err.slice(0, 1000) : err,
-      );
-      return res.status(502).json({ error: `Groq error: ${err}` });
+      console.error("Groq error:", err.slice(0, 1000));
+
+      if (groqRes.status === 429) {
+        return res.status(429).json({
+          error: "Rate limit exceeded. Please try again in a few seconds.",
+          suggestion: "Consider upgrading your Groq plan for higher limits",
+        });
+      }
+      return res
+        .status(502)
+        .json({ error: `Groq API error: ${err.slice(0, 200)}` });
     }
 
     const data = await groqRes.json();
+    if (!data.choices?.[0]?.message?.content) {
+      console.error("Empty response from model", data);
+      return res.status(502).json({
+        error:
+          "Model returned empty response. Increase token limit or simplify input.",
+        finish_reason: data.choices?.[0]?.finish_reason,
+      });
+    }
+
     const raw = data.choices[0].message.content.trim();
 
     // Strip markdown code fences if model wraps response
     const jsonStr = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
-    const parsed = JSON.parse(jsonStr);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error("JSON parse error:", parseErr.message);
+      return res.status(502).json({
+        error: "Invalid JSON response from model: " + parseErr.message,
+        sample: jsonStr.slice(0, 200),
+      });
+    }
 
     return res.status(200).json(parsed);
   } catch (err) {

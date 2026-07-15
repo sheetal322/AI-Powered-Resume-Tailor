@@ -20,48 +20,29 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'openai/gpt-oss-20b',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.4,
-        max_tokens: 2048,
+        temperature: 0.5,
+        max_tokens: 1200,
       }),
     });
     if (!r.ok) {
       const err = await r.text();
-      throw new Error(`Groq error: ${err}`);
+      if (r.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again in a few seconds.');
+      }
+      throw new Error(`Groq error: ${err.slice(0, 200)}`);
     }
     const d = await r.json();
     return d.choices[0].message.content.trim();
   };
 
   try {
-    const tailorPrompt = `You are an expert resume writer and career coach.
-Rewrite the resume below to better target the provided job description.
-Rules:
-- Keep ALL factual information accurate (company names, dates, degrees, titles)
-- Add relevant keywords from the job description naturally where appropriate
-- Strengthen action verbs and quantify achievements where possible
-- Maintain the same overall structure and sections
-- Return ONLY the rewritten resume text — no explanations, no commentary, no markdown headers
+    const tailorPrompt = `Rewrite this resume to match the job description. Keep facts accurate, add relevant keywords, use strong verbs. Output only the rewritten resume, no headers.
+Resume: ${resume}
+Job: ${jobDescription}`;
 
-Resume:
-${resume}
-
-Job Description:
-${jobDescription}`;
-
-    const coverPrompt = `Write a professional, concise cover letter for this job application.
-Structure:
-- Paragraph 1 (2-3 sentences): Hook + specific role + how you found it
-- Paragraph 2 (3-4 sentences): Your strongest 2-3 qualifications with concrete examples from the resume
-- Paragraph 3 (2 sentences): Enthusiasm for the company + CTA
-
-Use the candidate's resume for facts. Do not invent details.
-Return only the cover letter text — no subject line, no date, no address headers.
-
-Resume:
-${resume}
-
-Job Description:
-${jobDescription}`;
+    const coverPrompt = `Write a 3-paragraph cover letter for this job. P1: Hook + role. P2: 2-3 qualifications with examples from resume. P3: Enthusiasm + CTA. Output only the letter, no headers.
+Resume: ${resume}
+Job: ${jobDescription}`;
 
     // Run both in parallel
     const [tailoredResume, coverLetter] = await Promise.all([
