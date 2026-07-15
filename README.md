@@ -13,7 +13,7 @@ An AI-powered resume tailoring tool that analyzes your resume against a job desc
 ## Tech Stack
 
 - **Frontend** — React 19, Vite, Tailwind CSS
-- **AI** — Groq API (Llama 3.3 70B)
+- **AI** — Groq API (GPT-OSS-20B)
 - **Deployment** — Vercel (serverless API routes)
 
 ## Getting Started

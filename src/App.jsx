@@ -78,7 +78,7 @@ export default function App() {
               Resume Tailor
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              AI-powered · Free · Powered by Groq + Llama 3.3
+              AI-powered · Free · Powered by Groq + GPT-OSS-20B
             </p>
           </div>
         </div>
